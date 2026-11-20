@@ -1,0 +1,6 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY . .
+ENV HOST=0.0.0.0 NO_BROWSER=1 DATA_DIR=/data ADMIN_TOKEN=MK1
+EXPOSE 3000
+CMD ["node","server.js"]

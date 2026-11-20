@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prospectly v2</title>
+<style>
+/* ===== Design-Token: Farben/Radius hier zentral ändern ===== */
+:root{--bg:#eceee9;--panel:#fcfcfa;--sunk:#f2f4ef;--ink:#17211e;--mute:#5b6863;--line:#dadfd7;--acc:#0e6e5c;--acc-hi:#0a5648;--acc-soft:#dcefe9;--acc-ink:#fff;--side:#fcfcfa;
+  --good:#17703a;--goodbg:#e1f2e6;--warn:#8f5a0a;--warnbg:#fbefd3;--bad:#b3261e;--badbg:#fbe5e2;--none:#254fb8;--nonebg:#e3eafb;--ok:#8a6200;--okbg:#f8edc6;--meter:#d99a14;--r:10px;--shadow:0 1px 0 rgba(23,33,30,.04),0 2px 8px rgba(23,33,30,.05)}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1513;--panel:#171e1b;--sunk:#121816;--ink:#e8eeea;--mute:#98a8a1;--line:#2a3430;--acc:#46c2a6;--acc-hi:#6fd6bd;--acc-soft:#16332c;--acc-ink:#06201a;--side:#131917;
+  --good:#6fd68f;--goodbg:#14301e;--warn:#f0bf5c;--warnbg:#33260c;--bad:#ff9a90;--badbg:#3a1b18;--none:#9db5ff;--nonebg:#1a2547;--ok:#f0cf5a;--okbg:#302a0e;--meter:#e8b23a;--shadow:0 1px 0 rgba(0,0,0,.3),0 2px 10px rgba(0,0,0,.25)}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.55 "Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink);display:grid;grid-template-columns:216px 1fr;min-height:100vh;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+a{color:var(--acc);text-underline-offset:2px}
+aside{background:var(--side);border-right:1px solid var(--line);padding:20px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+.logo{display:flex;align-items:center;gap:10px;margin:0 8px 20px;font-weight:700;font-size:18px;letter-spacing:-.02em}
+.logo i{width:30px;height:30px;border-radius:8px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:16px}
+aside nav{display:grid;gap:2px}
+aside nav button{display:flex;gap:10px;align-items:center;width:100%;background:none;border:0;color:var(--mute);padding:9px 10px;border-radius:8px;font:inherit;font-weight:500;cursor:pointer;text-align:left}
+aside nav button svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+aside nav button:hover{background:var(--sunk);color:var(--ink)}
+aside nav button.on{background:var(--acc-soft);color:var(--acc-hi);font-weight:650}
+aside nav button .badge{margin-left:auto}
+.badge{background:var(--acc);color:var(--acc-ink);border-radius:99px;font-size:12px;padding:0 8px;font-weight:700;line-height:20px;min-width:20px;text-align:center}
+h2 .badge{font-size:12px}
+#jobs{margin:auto 8px 0;font-size:12.5px;color:var(--mute);display:flex;gap:8px;align-items:center}
+#jobs.work{color:var(--acc-hi)}
+#jobs.work::before{content:"";width:10px;height:10px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){#jobs.work::before{animation:none}html{scroll-behavior:auto}}
+main{padding:30px clamp(14px,3vw,40px) 60px;max-width:1080px;width:100%}
+@media(max-width:760px){body{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px;border-right:0;border-bottom:1px solid var(--line)}.logo{margin:0 8px 0 4px}aside nav{display:flex;flex-wrap:wrap}aside nav button{padding:7px 9px}#jobs{display:none}}
+h2{font-size:19px;margin:34px 0 12px;display:flex;align-items:center;gap:10px;letter-spacing:-.02em;font-weight:700}h3{margin:0 0 4px;font-size:17px;letter-spacing:-.015em;font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+.hero{border-top:3px solid var(--acc);padding:20px 22px 18px}.hero h3{font-size:21px}
+.hero .btn{padding:10px 20px}
+.mute{color:var(--mute)}.small{font-size:13px}.good{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+input,select{min-height:40px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;transition:border-color .15s,background .15s}
+input:hover,select:hover,textarea:hover{border-color:var(--mute)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);background:var(--panel);box-shadow:0 0 0 3px var(--acc-soft)}
+textarea{min-height:230px;resize:vertical;line-height:1.55}
+label.f{display:block;margin:10px 0 0}label.f>span{display:block;color:var(--mute);font-size:13px;margin:0 0 4px;font-weight:500}
+.chk{display:flex;gap:8px;align-items:center;margin:12px 0 0;font-size:14px}.chk input{width:auto;accent-color:var(--acc)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.row>*{flex:1;min-width:150px}.row>.fit{flex:0 0 auto;min-width:0}
+.btn{background:var(--acc);color:var(--acc-ink);border:1px solid var(--acc);padding:8px 15px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600;margin:6px 6px 0 0;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--acc-hi);border-color:var(--acc-hi)}.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line);font-weight:500}.btn.ghost:hover{border-color:var(--mute);background:var(--sunk)}
+.btn.danger{background:transparent;color:var(--bad);border-color:transparent;font-weight:500}.btn.danger:hover{background:var(--badbg)}
+.tag{display:inline-block;font-size:12px;padding:1px 9px;border-radius:99px;border:1px solid var(--line);white-space:nowrap;margin-right:4px;color:var(--mute)}
+.tag.bad{border-color:var(--bad);color:var(--bad)}.tag.good{border-color:var(--good);color:var(--good)}
+.pill{display:inline-block;font-size:12px;font-weight:650;padding:2px 10px;border-radius:99px;white-space:nowrap}
+.g-none,.g-social{background:var(--nonebg);color:var(--none)}.g-bad{background:var(--badbg);color:var(--bad)}.g-ok{background:var(--okbg);color:var(--ok)}.g-good{background:var(--goodbg);color:var(--good)}
+.meter{display:inline-block;vertical-align:middle;width:54px;height:6px;border-radius:99px;background:var(--line);margin-left:8px;overflow:hidden}.meter b{display:block;height:100%;width:var(--v);background:var(--meter);border-radius:99px}
+.empty{padding:30px 24px;text-align:center;color:var(--mute);border:1px dashed var(--line);border-radius:var(--r);background:var(--panel)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.lead{display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}.lead>div:first-child{flex:1 1 360px}
+.lead .name{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.lead .facts{margin:4px 0 2px}
+.lead .issues{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px 6px}.lead .issues li{font-size:12.5px;background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:1px 8px;color:var(--mute)}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
+.item:hover{border-color:var(--acc)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:99px;padding:4px 12px;font:inherit;font-size:13px;cursor:pointer}.chip:hover{border-color:var(--mute)}.chip.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.stat:hover{border-color:var(--acc)}.stat b{display:block;font-size:26px;line-height:1.15;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.stat span{color:var(--mute);font-size:13px}
+.steps{display:grid;gap:8px;margin:8px 0;padding:0;list-style:none}.steps li{display:flex;gap:10px;align-items:center}
+.sinfo{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-left-width:4px;border-radius:var(--r);background:var(--panel);padding:12px 16px;margin-bottom:12px}
+.sinfo.err{border-left-color:var(--bad)}.sinfo.okk{border-left-color:var(--acc)}.sinfo.wait{border-left-color:var(--meter)}
+.sinfo p{margin:2px 0 0}
+table{width:100%;border-collapse:collapse}td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+pre{white-space:pre-wrap;font:inherit;margin:0}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:22px 24px;width:min(880px,94vw);max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(8,14,12,.6)}
+#toasts{position:fixed;right:16px;bottom:16px;display:grid;gap:8px;z-index:99}
+.toast{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:var(--r);box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:360px}.toast.err{background:var(--bad);color:#fff}
+details{margin-top:8px}summary{cursor:pointer}
+.gs{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:0 18px;margin-bottom:10px}.gs>summary{padding:14px 0;font-weight:650;font-size:16px}.gs[open]>summary{border-bottom:1px solid var(--line);margin-bottom:12px}
+.gs h4{margin:18px 0 4px;font-size:15px}.gs p,.gs li{margin:6px 0;max-width:76ch}.gs ol,.gs ul{padding-left:22px}.gs table td:first-child{white-space:nowrap;font-weight:600;width:1%;padding-right:16px}
+.note{border-left:3px solid var(--acc);background:var(--sunk);padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0}.note.warn{border-color:var(--warn)}
+.hint{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:4px 10px;font-size:13px;margin-top:6px;display:inline-block}
+code{background:var(--sunk);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:13px}
+.dots{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-bottom:14px}
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);margin:0}
+.chart h4{margin:0 0 10px;font-size:14px;font-weight:650;display:flex;justify-content:space-between;align-items:baseline;gap:8px}.chart h4 span{font-weight:400;color:var(--mute);font-size:12.5px}
+.donut{display:flex;gap:14px;align-items:center}.donut svg{width:112px;height:112px;flex:none}
+.donut circle.seg{cursor:pointer;transition:stroke-width .15s}.donut circle.seg:hover{stroke-width:7.5}
+.donut text{fill:var(--ink);font-weight:700;font-size:9px;text-anchor:middle}.donut text.sub{font-size:3.6px;font-weight:400;fill:var(--mute)}
+.legend{display:grid;gap:2px;flex:1;min-width:0}.legend button{display:flex;align-items:center;gap:8px;background:none;border:0;font:inherit;font-size:13px;color:var(--ink);padding:3px 4px;border-radius:6px;cursor:pointer;text-align:left}.legend button:hover{background:var(--sunk)}
+.legend i{width:10px;height:10px;border-radius:3px;flex:none}.legend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.funnel{display:grid;gap:7px}.funnel div{display:grid;grid-template-columns:92px 1fr 28px;gap:8px;align-items:center;font-size:13px}
+.funnel .tr{height:10px;background:var(--sunk);border-radius:99px;overflow:hidden}.funnel .tr i{display:block;height:100%;background:var(--acc);border-radius:99px;min-width:0}
+.funnel em{font-style:normal;text-align:right;font-weight:650;font-variant-numeric:tabular-nums}
+.bars{width:100%;height:96px;display:block}.bars rect{fill:var(--acc)}.bars rect.z{fill:var(--line)}.bars text{fill:var(--mute);font-size:8px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:4px}.toolbar>*{min-width:0}.toolbar .grow{flex:1 1 240px}.toolbar select{width:auto;max-width:200px}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.seg2 button{background:var(--panel);border:0;padding:7px 10px;cursor:pointer;color:var(--mute);display:grid;place-items:center}.seg2 button.on{background:var(--acc-soft);color:var(--acc-hi)}.seg2 svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);box-shadow:var(--shadow)}
+.tbl{min-width:640px}.tbl th{text-align:left;font-size:12.5px;font-weight:600;color:var(--mute);padding:9px 12px;border-bottom:1px solid var(--line);background:var(--sunk);white-space:nowrap}
+.tbl td{padding:9px 12px;vertical-align:middle}.tbl tr.trow{cursor:pointer}.tbl tr.trow:hover td{background:var(--sunk)}.tbl tr:last-child td{border-bottom:0}
+.pager{display:flex;gap:6px;align-items:center;justify-content:center;margin:16px 0 4px;flex-wrap:wrap}.pager .btn{margin:0;padding:6px 12px}.pager .btn[disabled]{opacity:.4;cursor:default}
+.count{color:var(--mute);font-size:13px;margin:6px 0 10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dnav{display:flex;gap:8px;align-items:center;margin:-4px 0 12px;color:var(--mute);font-size:13px}.dnav .btn{margin:0;padding:3px 10px}
+.prog{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.prog .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.prog .bar{height:8px;border-radius:99px;background:var(--sunk);border:1px solid var(--line);overflow:hidden;margin:10px 0 8px}.prog .bar i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .6s ease}
+.prog .stp{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mute)}.prog .stp span.on{color:var(--acc-hi);font-weight:650}.prog .stp span.dn{color:var(--ink)}
+@media(prefers-reduced-motion:reduce){.prog .bar i{transition:none}}
+/* Feinschliff */
+:root{color-scheme:light dark}
+::selection{background:var(--acc-soft)}
+main{min-width:0}
+main.wide{max-width:1500px}
+.hb{display:grid;gap:7px}.hb div{display:grid;grid-template-columns:minmax(90px,38%) 1fr 44px;gap:8px;align-items:center;font-size:13px}.hb .l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hb .tr{height:10px;background:var(--sunk);border-radius:99px;overflow:hidden}.hb .tr i{display:block;height:100%;background:var(--acc);border-radius:99px}.hb em{font-style:normal;text-align:right;font-weight:650;font-variant-numeric:tabular-nums}
+.stk{display:flex;height:22px;border-radius:7px;overflow:hidden;background:var(--sunk);border:1px solid var(--line)}.stk i{display:block;height:100%}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}.kpis>div{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}.kpis b{display:block;font-size:24px;letter-spacing:-.03em;line-height:1.2;font-variant-numeric:tabular-nums}.kpis span{color:var(--mute);font-size:13px}
+.cgrid .chart{box-shadow:none;padding:18px 20px;border-radius:14px}.cgrid .chart h4{font-size:13px;font-weight:600;color:var(--mute);text-transform:none;margin-bottom:16px}.cgrid .chart h4 span{font-size:12px;opacity:.8}
+.hb{gap:11px}.hb .tr{height:6px}.hb .l{color:var(--ink)}.hb em{color:var(--mute);font-weight:600}
+.stk{height:12px;border:0;border-radius:99px;gap:2px;background:transparent}.stk i{border-radius:99px}
+.kpis>div{border:0;background:transparent;padding:6px 4px;border-left:2px solid var(--line);padding-left:14px;border-radius:0}.kpis b{font-size:30px;font-weight:650}.kpis span{font-size:12.5px}
+.bars text{font-size:9.5px}.bars.wide text{font-size:5.5px}.ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;margin-bottom:14px}.ins>div{background:var(--acc-soft);color:var(--acc-hi);border-radius:12px;padding:12px 16px;font-size:14px;line-height:1.45}.ins b{font-weight:700}.bars rect{opacity:.9}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
+button:disabled{opacity:.45;cursor:default}
+.tw{max-height:74vh;overflow:auto}.tbl th{position:sticky;top:0;z-index:1}
+.tbl tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+.toast{animation:pop .18s ease}@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+.chip{transition:border-color .15s,background .15s}
+@media(prefers-reduced-motion:reduce){.toast{animation:none}}
+/* Tabelle */
+.vb{display:inline-flex;gap:4px}.vbtn{width:30px;height:28px;border:1px solid var(--line);background:var(--panel);border-radius:7px;cursor:pointer;font:inherit;font-weight:700;color:var(--mute);padding:0}.vbtn:hover{border-color:var(--mute)}
+.vbtn.v-yes.on{background:var(--goodbg);color:var(--good);border-color:var(--good)}.vbtn.v-maybe.on{background:var(--okbg);color:var(--ok);border-color:var(--ok)}.vbtn.v-no.on{background:var(--badbg);color:var(--bad);border-color:var(--bad)}
+.sortb{background:none;border:0;font:inherit;font-weight:600;color:var(--mute);cursor:pointer;padding:0;white-space:nowrap}.sortb:hover,.sortb.on{color:var(--acc-hi)}
+.tbl.wide{min-width:1380px}.tg-c{min-width:170px;max-width:280px}.tbl td.iss{max-width:280px;font-size:12.5px;color:var(--mute)}.tbl tr.cur td{background:var(--acc-soft)}
+.bulk{position:sticky;top:0;z-index:5;background:var(--acc-soft);border:1px solid var(--acc);border-radius:var(--r);padding:8px 12px;margin:8px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.bulk .btn{margin:0}
+/* Bewertung, Merkmale, Key-Test */
+.bulk{position:sticky;top:0;z-index:5}
+.rb{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;vertical-align:middle}
+.rbtn{border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--mute);font:inherit;font-size:12.5px;padding:4px 9px;cursor:pointer;white-space:nowrap}
+.rbtn:last-child{border-right:0}.rbtn:hover{background:var(--sunk);color:var(--ink)}
+.rbtn.r-fit.on{background:var(--goodbg);color:var(--good);font-weight:650}.rbtn.r-unfit.on{background:var(--badbg);color:var(--bad);font-weight:650}.rbtn.r-open.on{background:var(--sunk);color:var(--ink);font-weight:650}
+.tgs{display:flex;gap:4px 5px;flex-wrap:wrap;align-items:center}
+.tgp{font-size:12px;padding:1px 8px;border-radius:99px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);white-space:nowrap;line-height:1.5}
+.tgp.good{background:var(--goodbg);border-color:transparent;color:var(--good)}
+.tgp.add{background:transparent;border-style:dashed;color:var(--mute);cursor:pointer;font:inherit;font-size:12px;padding:1px 8px}.tgp.add:hover{border-color:var(--acc);color:var(--acc-hi)}
+.chip.tg-on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc-hi);font-weight:650}
+.fl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0}.fl>b{font-size:12.5px;color:var(--mute);font-weight:600;margin-right:2px}.fl .chip{margin:0}
+.rpill{font-size:12px;font-weight:650;padding:1px 9px;border-radius:99px;white-space:nowrap}.rpill.r-fit{background:var(--goodbg);color:var(--good)}.rpill.r-unfit{background:var(--badbg);color:var(--bad)}
+#tdlg{width:min(520px,94vw)}#tdlg h3{margin:0 0 4px}
+.trw{display:flex;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}.trw:last-child{border-bottom:0}
+.trw label{flex:1;display:flex;gap:9px;align-items:center;cursor:pointer;min-width:0}.trw label input{width:auto;min-height:0;accent-color:var(--acc);flex:none}
+.trw .ib{background:none;border:0;cursor:pointer;color:var(--mute);padding:4px 7px;border-radius:6px;font:inherit}.trw .ib:hover{background:var(--sunk);color:var(--ink)}
+.trw input[type=text],.trw input:not([type]){min-height:34px;padding:5px 9px}
+.tlist{margin:10px 0;padding:0;list-style:none;max-height:46vh;overflow:auto}
+.kt{margin:8px 0 2px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);border-left-width:4px;font-size:14px}
+.kt.ok{background:var(--goodbg);border-color:var(--good);color:var(--good)}.kt.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad)}.kt.warn{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}.kt.wait{background:var(--sunk);color:var(--mute)}
+.kt span.mute{color:inherit;opacity:.8}
+kbd{background:var(--sunk);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;font:inherit;font-size:12px;margin:0 2px}
+.pill.p-ok{background:var(--goodbg);color:var(--good)}.pill.p-cond{background:var(--warnbg);color:var(--warn)}.pill.p-no{background:var(--badbg);color:var(--bad)}.tbl tr.rrow td{vertical-align:top;border-bottom:1px solid var(--line)}
+/* Google-Angabe */
+.gbox{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:6px 0 2px;font-size:13px}
+.gbox .star{font-weight:650;color:var(--ink)}.gbox .star i{color:#e8a200;font-style:normal}.gbox button{margin:0;padding:2px 10px;font-size:12.5px}
+/* Cold Calls */
+.rbtn.c-noanswer.on{background:var(--sunk);color:var(--ink);font-weight:650}.rbtn.c-callback.on{background:var(--okbg);color:var(--ok);font-weight:650}.rbtn.c-interested.on{background:var(--goodbg);color:var(--good);font-weight:650}.rbtn.c-no.on{background:var(--badbg);color:var(--bad);font-weight:650}
+.rb.wrap{flex-wrap:wrap}
+.tel{display:inline-flex;align-items:center;gap:8px;font-size:17px;font-weight:700;letter-spacing:-.01em;text-decoration:none;background:var(--acc-soft);color:var(--acc-hi);border-radius:8px;padding:6px 12px;margin:6px 0 2px}
+.tel:hover{background:var(--acc);color:var(--acc-ink)}.tel svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cc textarea{min-height:56px;margin-top:8px;font-size:14px}
+.cc.done{opacity:.72}
+.addbtn{white-space:nowrap}
+.ccgrid{display:grid;gap:10px}
+
+/* ===== Prospectly v2 ===== */
+.logo small{font-size:11px;font-weight:700;color:var(--acc-hi);background:var(--acc-soft);border-radius:6px;padding:0 6px;margin-left:-2px}
+.row>label.wide{flex:1.6 1 200px}
+.sortbtns{display:flex;flex-direction:column;gap:6px;align-items:flex-end;justify-content:center}.sortbtns .btn{margin:0;white-space:nowrap}
+.sortbtns .btn kbd{margin-left:6px;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);color:inherit}.sortbtns .btn.ghost kbd{background:var(--sunk);border-color:var(--line)}
+.card.cur{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-soft),var(--shadow)}
+.gbox .gbtn{font-weight:650}
+.ph{width:160px;min-height:30px;padding:3px 9px;font-size:13px}
+.tundo{margin-left:10px;background:none;border:1px solid currentColor;color:inherit;border-radius:6px;font:inherit;font-size:13px;padding:1px 9px;cursor:pointer}
+.g-none{background:var(--nonebg);color:var(--none)}.g-social{background:#ece6fa;color:#5a3fb0}.g-bad{background:var(--badbg);color:var(--bad)}.g-ok{background:var(--okbg);color:var(--ok)}.g-good{background:var(--goodbg);color:var(--good)}
+@media(prefers-color-scheme:dark){.g-social{background:#2a2145;color:#c1b0f5}}
+@media(max-width:760px){.sortbtns{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start}}
+@media(max-width:760px){button,.btn,input,select,textarea{min-height:46px;font-size:16px}.card{padding:12px}table{display:block;overflow-x:auto}.toast{left:8px;right:8px}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="logo"><i>P</i>Prospectly <small>v2</small></div>
+  <nav id="nav"></nav>
+  <div id="jobs"></div>
+</aside>
+<main id="main"><div class="empty">Lädt …</div></main>
+<div id="toasts" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ===== Grundlagen ===== */
+let tok = window.TOKEN || localStorage.prsp || '';
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dt = t => t ? new Date(t).toLocaleString('de-DE', {day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+const lead = id => D.leads.find(l => l.id == id);
+const url = w => /^https?:/i.test(w) ? w : 'https://' + w;
+const fld = (t, inner, cls = '') => `<label class="f ${cls}"><span>${t}</span>${inner}</label>`;
+const attrIds = a => JSON.stringify(a).replace(/"/g, '&quot;');
+function toast(msg, err, undo) {
+  const el = Object.assign(document.createElement('div'), {className:'toast' + (err ? ' err' : '')});
+  el.textContent = msg + (undo ? ' ' : '');
+  if (undo) { const b = Object.assign(document.createElement('button'), {className:'tundo', textContent:'Rückgängig'}); b.onclick = () => { el.remove(); undo(); }; el.append(b); }
+  $('#toasts').append(el); setTimeout(() => el.remove(), err ? 6000 : undo ? 7000 : 2500);
+}
+async function api(path, method = 'GET', body) {
+  const r = await fetch('/api/' + path, {method, headers:{'x-token':tok, 'content-type':'application/json'}, body: body ? JSON.stringify(body) : undefined});
+  if (r.status == 401) {
+    tok = prompt('Zugangscode:') || '';
+    if (!tok) throw Error('Kein Token');
+    localStorage.prsp = tok; return api(path, method, body);
+  }
+  const j = await r.json().catch(() => ({error:'Ungültige Serverantwort'}));
+  if (!r.ok) { toast(j.error, true); throw Error(j.error); }
+  return j;
+}
+const typing = () => /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '') && $('#main').contains(document.activeElement);
+let renderPending = false;
+const load = async force => { const j = await api('state?rev=' + (force || !D ? '' : D.rev)); if (j.same) return; D = j; render(!force && typing()); };
+addEventListener('focusout', () => setTimeout(() => { if (renderPending && D && !typing()) render(); }, 120));
+const act = async (p, m, b) => { await api(p, m, b); await load(true); };
+
+const TABS = {sort:'Sortieren', cold:'Cold Calls', skip:'Aussortiert', stats:'Analytics', cfg:'Einstellungen'};
+const ICON = {
+  sort:'<path d="M4 6h16M4 12h10M4 18h6"/><path d="M17 15l3 3 3-3"/>',
+  cold:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
+  skip:'<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 002 2h10a2 2 0 002-2V9M10 13h4"/>',
+  stats:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  cfg:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>'};
+const GR = {none:'Keine Website', social:'Nur Social Media', bad:'Schlechte Website', ok:'Mittlere Website', good:'Gute Website'};
+const GCOL = {none:'#254fb8', social:'#7a5bd0', bad:'#b3261e', ok:'#d99a14', good:'#17703a'};
+const CRES = {noanswer:'Nicht erreicht', callback:'Rückruf', interested:'Interessiert', no:'Kein Interesse'};
+const WEBL = {any:'Mit und ohne Website', with:'Nur mit Website', without:'Nur ohne Website'};
+const JOBN = {search:'Suche', scan:'Prüfung'};
+const PHONE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>';
+const telHref = p => 'tel:' + String(p).replace(/[^\d+]/g, '');
+const PER = 20;
+
+let D = null, tab = ({sort:1, cold:1, skip:1, stats:1, cfg:1})[location.hash.slice(1)] ? location.hash.slice(1) : 'sort';
+let S = {loc:'', cat:'Alle Unternehmen', max:100, rad:5, web:'any', fcat:'', fgrade:'', phone:true, text:'', more:0};   // Sortieren
+let CC = {res:'', text:'', fcat:'', more:0};                                                                          // Cold Calls
+let SKP = {text:'', more:0};                                                                                          // Aussortiert
+let UNDO = null, KT = {};
+const go = t => { tab = t; location.hash = t; window.scrollTo(0, 0); render(); };
+addEventListener('hashchange', () => { const t = location.hash.slice(1); if (TABS[t] && t != tab) { tab = t; render(); } });
+
+const grade = l => l.grade || '';
+const gradeTag = l => {
+  const g = grade(l);
+  if (g) return `<span class="pill g-${g}" title="Potenzial ${l.score} von 100: je höher, desto mehr lässt sich an der Website verbessern">${GR[g]}</span><span class="meter" title="Potenzial ${l.score} von 100"><b style="--v:${Math.max(4, l.score || 0)}%"></b></span><span class="small mute" style="margin-left:6px">${l.score}</span>`;
+  return l.scanFailed ? '<span class="pill g-bad">Prüfung fehlgeschlagen</span>' : '<span class="mute small">Website wird geprüft …</span>';
+};
+const fmtT = ms => { const s = Math.max(0, Math.round(ms / 1000)); return s >= 60 ? Math.floor(s / 60) + ' min ' + (s % 60) + ' s' : s + ' s'; };
+setInterval(() => { const e = document.getElementById('ptime'); if (e && D?.progress?.since) e.textContent = fmtT(Date.now() - D.progress.since); }, 1000);
+const progBox = () => {
+  const p = D.progress; if (!p) return '';
+  const order = ['geo', 'map', 'filter', 'create', 'scan'], names = {geo:'Ort', map:'Kartendaten', filter:'Filtern', create:'Anlegen', scan:'Prüfen'};
+  const cur = order.indexOf(p.phase == 'retry' ? 'map' : p.phase);
+  const secs = p.since ? Math.round((Date.now() - p.since) / 1000) : 0, t = secs >= 60 ? Math.floor(secs / 60) + ' min ' + (secs % 60) + ' s' : secs + ' s';
+  return `<div class="prog" role="status" aria-live="polite"><div class="top"><b>${esc(p.label)}</b><span class="mute small">${esc(p.q || '')} · ${esc(p.src || '')} · <span id="ptime">${t}</span></span></div>
+  <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p.pct}"><i style="width:${p.pct}%"></i></div>
+  <div class="small">${esc(p.detail || '')}${p.phase == 'map' && p.found ? ` · <b>${p.found}</b> Treffer bisher` : ''}${p.phase == 'scan' ? ` · <b>${D.leads.filter(x => x.scannedAt && x.created >= p.since).length}</b> Leads fertig bewertet` : ''}</div>
+  <div class="stp" style="margin-top:8px">${order.map((k, i) => `<span class="${i < cur ? 'dn' : i == cur ? 'on' : ''}">${i < cur ? '✔' : i == cur ? '●' : '○'} ${names[k]}</span>`).join('')}</div></div>`;
+};
+const searchInfo = busy => {
+  const x = D.search; if (!x) return '';
+  const when = new Date(x.at).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+  if (x.error) return `<div class="sinfo ${x.retry ? 'wait' : 'err'}"><div><b>${x.retry ? 'Suche hakt, neuer Versuch läuft …' : 'Suche fehlgeschlagen'}</b> <span class="mute small">${esc(x.q)} · ${when}</span><p class="small">${esc(x.error)}</p>${x.retry ? '' : '<p class="small mute">Meist ist der kostenlose Kartendienst überlastet oder blockiert.</p>'}</div></div>`;
+  if (busy) return '';
+  const tips = [];
+  if (!x.total) tips.push('Der Kartendienst hat nichts geliefert. Radius vergrößern oder eine andere Branche wählen.');
+  else if (!x.n && x.known) tips.push('Alle Treffer kennst du schon, auch gelöschte oder aussortierte. Anderen Ort, anderen Radius oder eine andere Branche probieren.');
+  else if (!x.n && x.webFilter) tips.push('Der Filter „' + WEBL[x.web] + '“ hat alle Treffer entfernt. Stell ihn auf „Mit und ohne Website“.');
+  else if (!x.n && x.chains) tips.push('Es waren fast nur Ketten.');
+  return `<div class="sinfo ${x.n ? 'okk' : 'wait'}"><div><b>${x.n ? x.n + ' neue Leads gefunden' : 'Keine neuen Leads'}</b> <span class="mute small">${esc(x.q)} · ${x.radius} km · ${when} · Quelle: ${esc(x.src)}</span><p class="small mute">${x.total} Treffer${x.chains ? ', ' + x.chains + ' Ketten ausgeblendet' : ''}${x.webFilter ? ', ' + x.webFilter + ' durch Website-Filter entfernt' : ''}${x.known ? ', ' + x.known + ' schon bekannt' : ''}.</p>${tips.map(t => `<p class="small">${t}</p>`).join('')}${!x.n && x.known ? `<button class="btn ghost" onclick="if(confirm('Gelöschte und aussortierte Betriebe werden dann bei der nächsten Suche wieder vorgeschlagen. Vorhandene Leads bleiben unverändert. Fortfahren?'))act('forget-known','POST').then(()=>toast('Merkliste geleert. Suche jetzt erneut starten.'))">Gelöschte Betriebe wieder zulassen</button>` : ''}</div></div>`;
+};
+
+/* ===== Google: Link zur Suche und Maps immer, Bewertung/Öffnungszeiten mit Places-Key ===== */
+function gLine(x) {
+  const g = x.g, q = encodeURIComponent([x.name, x.addr || x.city].filter(Boolean).join(' '));
+  const maps = g?.maps || 'https://www.google.com/maps/search/' + q;
+  const today = g?.hours?.[(new Date().getDay() + 6) % 7] || '';
+  let info = '';
+  if (g && !g.none) {
+    info = g.rating != null ? `<span class="star"><i>★</i> ${String(g.rating).replace('.', ',')} <span class="mute small">(${g.n} Bewertungen)</span></span>` : '<span class="mute small">Google: noch keine Bewertungen</span>';
+    if (today) info += `<span class="mute small" title="${esc(g.hours.join(' | '))}">${esc(today)}</span>`;
+  } else if (g?.none) info = '<span class="mute small">Kein Google-Eintrag gefunden</span>';
+  const load = D.status?.places && (!g || g.none) ? `<button class="btn ghost" onclick="gLoad('${x.id}')">${g?.none ? 'Erneut suchen' : 'Google-Angabe laden'}</button>` : '';
+  return `<div class="gbox"><a class="gbtn" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">Google</a><a href="${esc(maps)}" target="_blank" rel="noopener">Maps</a>${info}${load}</div>`;
+}
+async function gLoad(id) {
+  try { const j = await api('leads/' + id + '/google', 'POST', {}); toast(j.g?.none ? 'Kein passender Google-Eintrag gefunden' : 'Google-Angabe geladen'); } catch {}
+  await load(true);
+}
+async function gLoadAll(idList) {
+  idList = idList.filter(i => { const l = lead(i); return l && (!l.g || l.g.none); }).slice(0, 60);
+  if (!idList.length) return toast('Alle sichtbaren Treffer haben schon eine Google-Angabe');
+  toast('Lade Google-Angaben für ' + idList.length + ' Treffer …');
+  try { const j = await api('leads/google-bulk', 'POST', {ids:idList}); toast(j.n + ' geladen' + (j.miss ? ', ' + j.miss + ' ohne Google-Eintrag' : '')); } catch {}
+  await load(true);
+}
+const phoneBox = x => x.phone
+  ? `<a class="tel" href="${esc(telHref(x.phone))}">${PHONE_SVG}${esc(x.phone)}</a>`
+  : `<span class="tag">keine Nummer</span> <input class="ph" aria-label="Nummer eintragen" placeholder="Nummer eintragen" onchange="setPhone('${x.id}',this.value)">`;
+const webLine = x => x.web ? `<a href="${esc(url(x.web))}" target="_blank" rel="noopener">${esc(x.web)}</a>` : `<span class="bad">keine eigene Website</span>${x.social ? ` · <a href="${esc(url(x.social))}" target="_blank" rel="noopener">Social-Media-Seite</a>` : ''}`;
+const setPhone = (id, v) => act('leads/' + id, 'PATCH', {phone:v});
+
+/* ===== Sortieren ===== */
+const pool = () => D.leads.filter(x => !x.list);
+const poolView = () => {
+  const t = S.text.trim().toLowerCase();
+  return pool().filter(x => (!S.phone || x.phone) && (!S.fcat || x.cat == S.fcat) && (!S.fgrade || grade(x) == S.fgrade) && (!t || (x.name + ' ' + x.cat + ' ' + x.addr + ' ' + x.web).toLowerCase().includes(t)))
+    .sort((a, b) => (!!b.phone - !!a.phone) || (b.score ?? -1) - (a.score ?? -1) || a.name.localeCompare(b.name, 'de'));
+};
+function poolCard(x, cur) {
+  return `<div class="card ${cur ? 'cur' : ''}"><div class="lead"><div>
+    <div><span class="name">${esc(x.name)}</span> <span class="mute small">${esc(x.cat)} · ${esc(x.city)}</span></div>
+    <div class="facts small">${webLine(x)}</div>
+    <div class="facts">${gradeTag(x)}</div>
+    <div style="margin:6px 0 2px">${phoneBox(x)}</div>
+    ${gLine(x)}
+    <div class="mute small">${esc(x.addr)}</div>
+  </div><div class="sortbtns">
+    <button class="btn sb-cold" onclick="sortTo(['${x.id}'],'cold')">Cold Call${cur ? ' <kbd>C</kbd>' : ''}</button>
+    <button class="btn ghost sb-skip" onclick="sortTo(['${x.id}'],'skip')">Aussortieren${cur ? ' <kbd>X</kbd>' : ''}</button>
+  </div></div></div>`;
+}
+async function sortTo(idList, list, quiet) {
+  idList = idList.filter(id => lead(id));
+  if (!idList.length) return;
+  const from = idList.map(id => [id, lead(id).list]);
+  idList.forEach(id => { const l = lead(id); l.list = list; if (list == 'cold' && !l.cold) l.cold = {at:Date.now(), res:'', tries:0, last:0, note:'', hist:[]}; });
+  render();
+  try { await api('leads/sort', 'POST', {ids:idList, list}); } catch {}
+  await load(true);
+  const undo = async () => { UNDO = null; for (const lst of ['', 'cold', 'skip']) { const ids = from.filter(f => f[1] == lst).map(f => f[0]); if (ids.length) await api('leads/sort', 'POST', {ids, list:lst}); } await load(true); toast('Rückgängig gemacht'); };
+  UNDO = undo;
+  if (!quiet) toast(idList.length + (list == 'cold' ? ' in Cold Calls' : list == 'skip' ? ' aussortiert' : ' zurück in Sortieren'), false, undo);
+}
+function sortAll(list) {
+  const v = poolView(); if (!v.length) return;
+  if (v.length > 10 && !confirm(v.length + ' sichtbare Leads ' + (list == 'cold' ? 'in Cold Calls sortieren' : 'aussortieren') + '?')) return;
+  sortTo(v.map(x => x.id), list);
+}
+async function wipePool() {
+  const n = pool().length, c = D.leads.filter(x => x.list == 'cold').length, s = D.leads.filter(x => x.list == 'skip').length;
+  if (!n) return toast('Im Sortier-Pool liegt nichts zum Löschen.', true);
+  if (!confirm(n + ' unsortierte Leads löschen?\n\nBleibt erhalten: ' + c + ' in Cold Calls und ' + s + ' in Aussortiert.\nDie gelöschten Leads können bei einer neuen Suche wieder auftauchen.')) return;
+  const j = await api('wipe-pool', 'POST', {}); await load(true); toast(j.n + ' Leads gelöscht, ' + j.kept + ' sortierte bleiben');
+}
+async function find() {
+  if (!S.loc.trim()) return toast('Bitte einen Ort eingeben', true);
+  await act('search', 'POST', {location:S.loc, category:S.cat, maxLeads:S.max, radiusKm:S.rad, web:S.web});
+  document.activeElement?.blur?.(); toast(S.cat == 'Alle Unternehmen' ? 'Suche nach allen Unternehmen in ' + S.loc + ' gestartet' : 'Suche gestartet');
+}
+const catOptions = cur => D.cats.map(k => `<option ${k == cur ? 'selected' : ''}>${esc(k)}</option>`).join('');
+const gradeChips = (items, cur, setter) => { const n = g => items.filter(x => grade(x) == g).length; return `<div class="chips"><button class="chip ${cur == '' ? 'on' : ''}" onclick="${setter}('')">Alle Bewertungen</button>${Object.entries(GR).filter(([k]) => n(k)).map(([k, t]) => `<button class="chip ${cur == k ? 'on' : ''}" onclick="${setter}('${k}')">${t} ${n(k)}</button>`).join('')}</div>`; };
+
+const VIEWS = {
+sort() {
+  const all = pool(), v = poolView(), page = v.slice(0, PER + S.more * PER), busy = (D.jobs.search || 0) + (D.jobs.scan || 0);
+  const nCold = D.leads.filter(x => x.list == 'cold').length, nSkip = D.leads.filter(x => x.list == 'skip').length;
+  const cats = {}; all.forEach(x => cats[x.cat] = (cats[x.cat] || 0) + 1);
+  const catChips = Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  const noPhone = all.filter(x => !x.phone).length;
+  return `
+  <div class="stats">
+    <div class="stat" style="cursor:default"><b>${all.length}</b><span>Zum Sortieren</span></div>
+    <button class="stat" onclick="go('cold')"><b>${nCold}</b><span>In Cold Calls</span></button>
+    <button class="stat" onclick="go('skip')"><b>${nSkip}</b><span>Aussortiert</span></button>
+  </div>
+  <div class="card hero"><h3>Leads suchen</h3><p class="mute small" style="margin:0">Mit „Alle Unternehmen“ holt Prospectly alle Betriebe einer Stadt. Ketten und schon sortierte Leads werden ausgeblendet.</p>
+    <div class="row">${fld('Ort', `<input value="${esc(S.loc)}" oninput="S.loc=this.value" onkeydown="if(event.key=='Enter')find()" placeholder="z. B. Rostock">`)}
+    ${fld('Kategorie', `<select onchange="S.cat=this.value">${catOptions(S.cat)}</select>`)}
+    ${fld('Anzahl', `<input type="number" min="1" max="1000" value="${S.max}" oninput="S.max=this.value">`)}
+    ${fld('Radius (km)', `<input type="number" min="1" max="50" value="${S.rad}" oninput="S.rad=this.value">`)}
+    ${fld('Website', `<select onchange="S.web=this.value">${Object.entries(WEBL).map(([k, t]) => `<option value="${k}" ${k == S.web ? 'selected' : ''}>${t}</option>`).join('')}</select>`, 'wide')}
+    <div class="fit"><button class="btn" onclick="find()">Leads suchen</button></div></div></div>
+  ${progBox()}${searchInfo(busy || !!D.progress)}
+  <h2>Sortieren <span class="badge">${v.length}</span>${all.length ? `<button class="btn danger" style="margin:0 0 0 auto;font-size:13px;padding:4px 12px" onclick="wipePool()">Alle ${all.length} Leads löschen</button>` : ''}</h2>
+  ${all.length ? `<p class="mute small" style="margin:-6px 0 10px">Tasten: <kbd>C</kbd> oder <kbd>→</kbd> in Cold Calls · <kbd>X</kbd> oder <kbd>←</kbd> aussortieren · <kbd>Z</kbd> rückgängig. Beim Löschen bleiben Cold Calls und Aussortiert erhalten.</p>
+  <div class="chips"><button class="chip ${S.fcat == '' ? 'on' : ''}" onclick="S.fcat='';S.more=0;render()">Alle Branchen ${all.length}</button>${catChips.map(([k, n]) => `<button class="chip ${S.fcat == k ? 'on' : ''}" onclick="S.fcat=this.dataset.k;S.more=0;render()" data-k="${esc(k)}">${esc(k)} ${n}</button>`).join('')}</div>
+  ${gradeChips(all, S.fgrade, "setGrade")}
+  <div class="row" style="margin-bottom:10px"><label class="chip" style="display:inline-flex;gap:6px;align-items:center;flex:0 0 auto;min-width:0"><input type="checkbox" style="width:auto;min-height:0;accent-color:var(--acc)" ${S.phone ? 'checked' : ''} onchange="S.phone=this.checked;S.more=0;render()"> nur mit Telefonnummer${S.phone && noPhone ? ` (${noPhone} ohne Nummer ausgeblendet)` : ''}</label>
+    <input aria-label="Suchen" placeholder="Filtern nach Name, Ort …" value="${esc(S.text)}" oninput="S.text=this.value;S.more=0;clearTimeout(window._t);window._t=setTimeout(render,250)" style="max-width:260px"></div>
+  ${v.length ? `<p class="mute small" style="margin:0 0 10px"><button class="btn" style="margin:0 6px 0 0" onclick="sortAll('cold')">Alle ${v.length} sichtbaren → Cold Calls</button><button class="btn ghost" style="margin:0 6px 0 0" onclick="sortAll('skip')">Alle ${v.length} aussortieren</button>${D.status.places ? `<button class="btn ghost" style="margin:0" onclick="gLoadAll(${attrIds(page.map(x => x.id))})">Google-Angaben für diese ${page.length} laden</button>` : ''}</p>` : ''}` : ''}
+  ${page.map((x, i) => poolCard(x, i == 0)).join('') || `<div class="empty"><b>${all.length ? 'Nichts mit diesen Filtern' : 'Nichts zum Sortieren'}</b>${all.length ? 'Filter lockern, zum Beispiel „nur mit Telefonnummer“ ausschalten.' : 'Suche oben nach Betrieben, zum Beispiel „Alle Unternehmen“ in deiner Stadt.'}</div>`}
+  ${v.length > page.length ? `<p><button class="btn ghost" onclick="S.more++;render()">Weitere ${Math.min(PER, v.length - page.length)} anzeigen</button></p>` : ''}`;
+},
+cold() {
+  const list = D.leads.filter(x => x.list == 'cold'), t = CC.text.trim().toLowerCase();
+  const cnt = r => list.filter(x => (x.cold.res || '') == r).length;
+  const cats = {}; list.forEach(x => cats[x.cat] = (cats[x.cat] || 0) + 1);
+  const order = {'':0, callback:1, noanswer:2, interested:3, no:4};
+  const shown = list.filter(x => (!CC.res || (x.cold.res || '') == (CC.res == '-' ? '' : CC.res)) && (!CC.fcat || x.cat == CC.fcat) && (!t || (x.name + ' ' + x.cat + ' ' + x.addr + ' ' + x.phone + ' ' + (x.cold.note || '')).toLowerCase().includes(t)))
+    .sort((a, b) => order[a.cold.res || ''] - order[b.cold.res || ''] || (a.cold.last || 0) - (b.cold.last || 0) || b.cold.at - a.cold.at);
+  const page = shown.slice(0, 30 + CC.more * 30), calls = list.reduce((n, x) => n + (x.cold.tries || 0), 0);
+  return `
+  <div class="stats">
+    <div class="stat" style="cursor:default"><b>${list.length}</b><span>In der Anrufliste</span></div>
+    <button class="stat" onclick="CC.res='-';render()"><b>${cnt('')}</b><span>Noch nicht angerufen</span></button>
+    <button class="stat" onclick="CC.res='callback';render()"><b>${cnt('callback')}</b><span>Rückruf</span></button>
+    <button class="stat" onclick="CC.res='interested';render()"><b>${cnt('interested')}</b><span>Interessiert</span></button>
+    <div class="stat" style="cursor:default"><b>${calls}</b><span>Anrufe insgesamt</span></div>
+  </div>
+  <div class="row" style="margin:0 0 6px"><div class="fit"><button class="btn" style="margin:0 6px 0 0" onclick="sendList()" ${list.some(x => x.phone) ? '' : 'disabled'}>Liste per E-Mail senden</button><button class="btn ghost" style="margin:0" onclick="copyList()" ${list.some(x => x.phone) ? '' : 'disabled'}>Liste kopieren</button></div>
+    <span class="mute small" style="flex:1 1 280px">Schickt alle ${list.filter(x => x.phone).length} Nummern mit Name, Google-Adresse und Maps-Link an ${esc(D.status.mail.to.replace(/, /g, ' und '))}. Die Liste hier bleibt unverändert.</span></div>
+  <div class="chips"><button class="chip ${CC.res == '' ? 'on' : ''}" onclick="CC.res='';CC.more=0;render()">Alle ${list.length}</button><button class="chip ${CC.res == '-' ? 'on' : ''}" onclick="CC.res='-';CC.more=0;render()">Offen ${cnt('')}</button>${Object.entries(CRES).map(([k, n]) => `<button class="chip ${CC.res == k ? 'on' : ''}" onclick="CC.res='${k}';CC.more=0;render()">${n} ${cnt(k)}</button>`).join('')}</div>
+  <div class="row" style="margin-bottom:10px"><select aria-label="Branche" onchange="CC.fcat=this.value;CC.more=0;render()" style="max-width:240px"><option value="">Alle Branchen</option>${Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<option value="${esc(k)}" ${CC.fcat == k ? 'selected' : ''}>${esc(k)} (${n})</option>`).join('')}</select>
+    <input aria-label="Suchen" placeholder="Name, Nummer, Notiz …" value="${esc(CC.text)}" oninput="CC.text=this.value;CC.more=0;clearTimeout(window._t);window._t=setTimeout(render,250)" style="max-width:260px"></div>
+  ${page.map(ccCard).join('') || `<div class="empty"><b>${list.length ? 'Nichts mit diesen Filtern' : 'Noch niemand in der Liste'}</b>${list.length ? '' : 'Sortiere Leads im Tab „Sortieren“ mit „Cold Call“ hierher.'}</div>`}
+  ${shown.length > page.length ? `<p><button class="btn ghost" onclick="CC.more++;render()">Weitere ${Math.min(30, shown.length - page.length)} anzeigen</button></p>` : ''}`;
+},
+skip() {
+  const list = D.leads.filter(x => x.list == 'skip'), t = SKP.text.trim().toLowerCase();
+  const shown = list.filter(x => !t || (x.name + ' ' + x.cat + ' ' + x.addr).toLowerCase().includes(t)).sort((a, b) => (b.skipAt || 0) - (a.skipAt || 0));
+  const page = shown.slice(0, 30 + SKP.more * 30);
+  return `
+  <div class="stats"><div class="stat" style="cursor:default"><b>${list.length}</b><span>Aussortiert</span></div></div>
+  <p class="mute small" style="margin:0 0 10px">Diese Betriebe werden bei neuen Suchen nicht noch einmal vorgeschlagen und überleben „Alle Leads löschen“.</p>
+  <div class="row" style="margin-bottom:10px"><input aria-label="Suchen" placeholder="Name oder Ort filtern …" value="${esc(SKP.text)}" oninput="SKP.text=this.value;SKP.more=0;clearTimeout(window._t);window._t=setTimeout(render,250)" style="max-width:280px">
+    ${shown.length ? `<div class="fit"><button class="btn danger" style="margin:0" onclick="delSkipped()">${t ? shown.length + ' gefilterte' : 'Alle ' + list.length} endgültig löschen</button></div>` : ''}</div>
+  ${page.map(x => `<div class="card"><div class="lead"><div>
+    <div><span class="name">${esc(x.name)}</span> <span class="mute small">${esc(x.cat)} · ${esc(x.city)}</span> <span class="mute small">· aussortiert ${dt(x.skipAt)}</span></div>
+    <div class="facts small">${webLine(x)}${x.phone ? ` · ${esc(x.phone)}` : ''}</div>${gLine(x)}</div>
+    <div class="sortbtns"><button class="btn" onclick="sortTo(['${x.id}'],'cold')">In Cold Calls</button><button class="btn ghost" onclick="sortTo(['${x.id}'],'')">Zurück zu Sortieren</button><button class="btn danger" onclick="delLead('${x.id}')">Löschen</button></div></div></div>`).join('') || `<div class="empty"><b>${list.length ? 'Nichts mit diesem Filter' : 'Nichts aussortiert'}</b>${list.length ? '' : 'Was du im Tab „Sortieren“ aussortierst, landet hier.'}</div>`}
+  ${shown.length > page.length ? `<p><button class="btn ghost" onclick="SKP.more++;render()">Weitere ${Math.min(30, shown.length - page.length)} anzeigen</button></p>` : ''}`;
+},
+stats: () => statsView(),
+cfg: () => cfgView()
+};
+function setGrade(g) { S.fgrade = g; S.more = 0; render(); }
+function ccCard(x) {
+  const c = x.cold;
+  return `<div class="card cc ${c.res == 'no' || c.res == 'interested' ? 'done' : ''}"><div class="lead"><div>
+    <div><span class="name">${esc(x.name)}</span> <span class="mute small">${esc(x.cat)} · ${esc(x.city)}</span> ${c.res ? `<span class="pill ${c.res == 'interested' ? 'p-ok' : c.res == 'no' ? 'p-no' : 'p-cond'}">${CRES[c.res]}</span>` : ''}</div>
+    <div style="margin:4px 0">${phoneBox(x)}</div>
+    <div class="facts small">${webLine(x)} · ${gradeTag(x)}</div>
+    ${gLine(x)}
+    <div class="mute small">${esc(x.addr)}${c.tries ? ` · ${c.tries}× angerufen, zuletzt ${dt(c.last)}` : ''}</div>
+  </div><div class="sortbtns">
+    <span class="rb wrap" role="group" aria-label="Ergebnis des Anrufs">${Object.entries(CRES).map(([k, t]) => `<button class="rbtn c-${k} ${c.res == k ? 'on' : ''}" aria-pressed="${c.res == k}" onclick="callRes('${x.id}','${k}')">${t}</button>`).join('')}</span>
+    <button class="btn ghost" style="margin:0" onclick="sortTo(['${x.id}'],'skip')">Aussortieren</button>
+    <button class="btn ghost" style="margin:0" onclick="sortTo(['${x.id}'],'')">Zurück zu Sortieren</button></div></div>
+  <textarea aria-label="Notiz zum Gespräch" placeholder="Notiz zum Gespräch …" onchange="ccNote('${x.id}',this.value)">${esc(c.note || '')}</textarea></div>`;
+}
+function callRes(id, k) {
+  const l = lead(id); if (!l?.cold) return;
+  const res = l.cold.res == k ? '' : k;
+  if (res) { l.cold.res = res; l.cold.tries = (l.cold.tries || 0) + 1; l.cold.last = Date.now(); } else l.cold.res = '';
+  render(); api('leads/' + id, 'PATCH', {call:res}).then(() => load(true), () => load(true));
+}
+async function sendList() {
+  const m = D.status.mail, n = D.leads.filter(x => x.list == 'cold' && x.phone).length;
+  if (!D.status.smtp) { toast('E-Mail-Versand ist noch nicht eingerichtet. Ich öffne die Einstellungen.', true); return go('cfg'); }
+  if (!confirm(n + ' Nummern an ' + m.to.replace(/, /g, ' und ') + ' senden?')) return;
+  toast('Sende Liste …');
+  try { const j = await api('send-list', 'POST', {}); toast('Liste mit ' + j.n + ' Nummern an ' + j.to + ' gesendet'); } catch {}
+}
+async function copyList() {
+  try { const j = await api('list-text'); await navigator.clipboard.writeText(j.text); toast('Liste mit ' + j.n + ' Nummern kopiert'); } catch (e) { toast('Kopieren nicht möglich: ' + (e.message || ''), true); }
+}
+const ccNote = (id, v) => api('leads/' + id, 'PATCH', {note:v}).then(() => load(true), () => load(true));
+async function delLead(id) { if (!confirm('Endgültig löschen? Der Betrieb wird bei neuen Suchen nicht erneut vorgeschlagen.')) return; await act('leads/' + id, 'DELETE'); }
+async function delSkipped() {
+  const t = SKP.text.trim().toLowerCase(), v = D.leads.filter(x => x.list == 'skip' && (!t || (x.name + ' ' + x.cat + ' ' + x.addr).toLowerCase().includes(t)));
+  if (!confirm(v.length + ' aussortierte Leads endgültig löschen? Sie werden bei neuen Suchen nicht erneut vorgeschlagen.')) return;
+  await act('leads/delete', 'POST', {ids:v.map(x => x.id)}); toast(v.length + ' gelöscht');
+}
+
+/* ===== Analytics ===== */
+const pct = (a, b) => b ? Math.round(a / b * 100) + ' %' : '–';
+function hbars(rows, color) {   // rows: [label, value, text]
+  const mx = Math.max(1, ...rows.map(r => r[1]));
+  return `<div class="hb">${rows.map(r => `<div><span class="l" title="${esc(r[0])}">${esc(r[0])}</span><span class="tr"><i style="width:${r[1] / mx * 100}%;${color ? 'background:' + color : ''}"></i></span><em>${esc(r[2] ?? r[1])}</em></div>`).join('')}</div>`;
+}
+function vbars(cols) {   // cols: [label, calls, interested]
+  const mx = Math.max(1, ...cols.map(c => c[1])), w = 300 / cols.length;
+  return `<svg class="bars" viewBox="0 0 300 100" role="img" aria-label="Anrufe im Verlauf">${cols.map((c, i) => {
+    const h = c[1] ? Math.max(4, c[1] / mx * 66) : 2, hi = c[2] ? Math.max(3, c[2] / mx * 66) : 0;
+    return `<g><title>${esc(c[0])}: ${c[1]} Anrufe, ${c[2]} interessiert</title><rect class="${c[1] ? '' : 'z'}" x="${i * w + 2}" y="${82 - h}" width="${w - 4}" height="${h}" rx="2"/>${hi ? `<rect x="${i * w + 2}" y="${82 - hi}" width="${w - 4}" height="${hi}" rx="2" style="fill:var(--good)"/>` : ''}${cols.length <= 8 || (cols.length - 1 - i) % 2 == 0 ? `<text x="${i * w + w / 2}" y="94" text-anchor="middle">${esc(c[0])}</text>` : ''}</g>`;
+  }).join('')}</svg>`;
+}
+function statsView() {
+  const all = D.leads, P = all.filter(x => !x.list), C = all.filter(x => x.list == 'cold'), K = all.filter(x => x.list == 'skip');
+  const called = C.filter(x => x.cold.tries > 0), hist = C.flatMap(x => (x.cold.hist || []).map(h => ({...h, x})));
+  const n = r => C.filter(x => x.cold.res == r).length, inter = n('interested');
+  if (!all.length) return '<div class="empty"><b>Noch keine Daten</b>Suche und sortiere Leads, dann erscheinen hier Zahlen.</div>';
+  const day = 864e5, d0 = new Date(); d0.setHours(0, 0, 0, 0);
+  const days = Array.from({length:14}, (_, i) => { const a = +d0 - (13 - i) * day, h = hist.filter(e => e.t >= a && e.t < a + day); return [new Date(a).toLocaleDateString('de-DE', {day:'numeric', month:'numeric'}), h.length, h.filter(e => e.res == 'interested').length]; });
+  const hours = Array.from({length:12}, (_, i) => { const h = hist.filter(e => new Date(e.t).getHours() == i + 8); return [String(i + 8), h.length, h.filter(e => e.res == 'interested').length]; });
+  const today = hist.filter(e => e.t >= +d0).length, week = hist.filter(e => e.t >= +d0 - 6 * day).length;
+  const group = (items, keyFn) => { const m = {}; items.forEach(x => { const k = keyFn(x); if (!k) return; (m[k] = m[k] || {n:0, c:0, i:0}); m[k].n++; if (x.cold?.tries) m[k].c++; if (x.cold?.res == 'interested') m[k].i++; }); return Object.entries(m); };
+  const byCat = group(C, x => x.cat).sort((a, b) => b[1].c - a[1].c || b[1].n - a[1].n).slice(0, 8);
+  const byGr = group(C, x => GR[grade(x)]).sort((a, b) => b[1].c - a[1].c);
+  const byCity = group(C, x => x.city).sort((a, b) => b[1].n - a[1].n).slice(0, 6);
+  const total = C.length + K.length, best = byCat.filter(e => e[1].c >= 3).sort((a, b) => b[1].i / b[1].c - a[1].i / a[1].c)[0];
+  const rateRows = rows => rows.length ? hbars(rows.map(([k, v]) => [k, v.c, v.c ? `${v.i}/${v.c} · ${pct(v.i, v.c)}` : `${v.n} Leads`])) : '<p class="mute small">Noch keine Anrufe.</p>';
+  const skipCats = group(K, x => x.cat).sort((a, b) => b[1].n - a[1].n).slice(0, 6);
+  return `
+  <div class="stats">
+    <div class="stat" style="cursor:default"><b>${all.length}</b><span>Leads gesamt</span></div>
+    <div class="stat" style="cursor:default"><b>${called.length}</b><span>Schon angerufen</span></div>
+    <div class="stat" style="cursor:default"><b>${inter}</b><span>Interessiert</span></div>
+    <div class="stat" style="cursor:default"><b>${pct(inter, called.length)}</b><span>Erfolgsquote</span></div>
+    <div class="stat" style="cursor:default"><b>${today}</b><span>Anrufe heute · ${week} in 7 Tagen</span></div>
+  </div>
+  ${best ? `<div class="ins"><div>Beste Branche bisher: <b>${esc(best[0])}</b> mit ${best[1].i} von ${best[1].c} interessiert (${pct(best[1].i, best[1].c)}).</div></div>` : ''}
+  <div class="card"><h3>Sortierung</h3><p class="mute small" style="margin:0 0 8px">Von ${total} sortierten Leads gingen ${pct(C.length, total)} in Cold Calls, ${P.length} warten noch.</p>
+    ${hbars([['Zum Sortieren', P.length], ['In Cold Calls', C.length], ['Aussortiert', K.length]])}</div>
+  <div class="card"><h3>Anruf-Ergebnisse</h3><p class="mute small" style="margin:0 0 8px">${C.length - called.length} Leads in der Liste noch ohne Anruf.</p>
+    ${hbars([['Noch nicht angerufen', C.length - called.length], ...Object.entries(CRES).map(([k, t]) => [t, n(k)])])}</div>
+  <div class="card"><h3>Anrufe der letzten 14 Tage</h3><p class="mute small" style="margin:0 0 4px">Grün: davon interessiert.</p>${hist.length ? vbars(days) : '<p class="mute small">Sobald du Anrufergebnisse einträgst, erscheint hier der Verlauf.</p>'}</div>
+  <div class="card"><h3>Anrufe nach Uhrzeit</h3><p class="mute small" style="margin:0 0 4px">Wann erreichst du Leute? (Uhrzeit des Eintrags)</p>${hist.length ? vbars(hours) : '<p class="mute small">Noch keine Anrufe.</p>'}</div>
+  <div class="card"><h3>Erfolg nach Branche</h3><p class="mute small" style="margin:0 0 8px">Interessiert von angerufen.</p>${rateRows(byCat)}</div>
+  <div class="card"><h3>Erfolg nach Website-Qualität</h3><p class="mute small" style="margin:0 0 8px">Lohnt es sich, Betriebe mit schlechter oder ohne Website anzurufen?</p>${rateRows(byGr)}</div>
+  ${byCity.length > 1 ? `<div class="card"><h3>Nach Ort</h3>${rateRows(byCity)}</div>` : ''}
+  ${skipCats.length ? `<div class="card"><h3>Was du aussortierst</h3>${hbars(skipCats.map(([k, v]) => [k, v.n]), 'var(--mute)')}</div>` : ''}`;
+}
+
+/* ===== Einstellungen ===== */
+const KEYS = {GOOGLE_PLACES_KEY:['Google Places', 'Beste Datenquelle: aktuelle Betriebe mit Telefon, Website, Bewertung und Öffnungszeiten. Braucht ein Google-Cloud-Konto mit aktivierter „Places API (New)“.']};
+function cfgView() {
+  const s = D.status;
+  const src = s.places ? 'Google Places' : 'nicht verbunden';
+  return `
+  <div class="card"><h3>Google verbinden</h3><p style="margin:2px 0 8px">Status: <b>${s.places ? '✅ verbunden' : '❌ nicht verbunden'}</b></p>
+    <p class="mute small" style="margin:0 0 8px">1. Auf den Knopf tippen, Projekt wählen, „Aktivieren“ drücken. 2. Dann „Key erstellen“, Key kopieren und unten einfügen. Wird automatisch gespeichert und getestet.</p>
+    <p style="margin:0 0 8px"><a class="btn" target="_blank" rel="noopener" href="https://console.cloud.google.com/apis/library/places.googleapis.com">1 · Places API aktivieren</a> <a class="btn ghost" target="_blank" rel="noopener" href="https://console.cloud.google.com/apis/credentials">2 · Key erstellen</a></p>
+    <input type="password" id="k_GOOGLE_PLACES_KEY" autocomplete="off" placeholder="Key hier einfügen" oninput="if(this.value.trim().length>30)saveKey('GOOGLE_PLACES_KEY')"></div>
+    ${Object.entries({}).map(([k, [name, info]]) => `<div class="card"><h3>${name}</h3><p class="mute small" style="margin:0">${info}</p>
+    <div class="row">${fld('API-Key' + (s.hints[k] ? ` <span class="mute">(gespeichert ${esc(s.hints[k])})</span>` : ''), `<input type="password" id="k_${k}" autocomplete="off" placeholder="${s.hints[k] ? 'Neuen Key einfügen, um ihn zu ersetzen' : 'Key einfügen'}">`)}
+      <div class="fit"><button class="btn" onclick="saveKey('${k}')">Speichern</button><button class="btn ghost" onclick="testKey('${k}')">Testen</button>${s.hints[k] ? `<button class="btn danger" onclick="clearKey('${k}')">Entfernen</button>` : ''}</div></div>
+    ${KT[k] ? `<div class="kt ${KT[k].status == 'ok' ? 'ok' : KT[k].status == 'invalid' ? 'bad' : 'warn'}">${esc(KT[k].message)}</div>` : ''}</div>`).join('')}
+  <div class="card"><h3>E-Mail-Versand der Liste</h3><p class="mute small" style="margin:0">Der Knopf „Liste per E-Mail senden“ im Tab Cold Calls schickt die Liste über deinen eigenen Mail-Zugang (SMTP). <b>Gmail:</b> Benutzer ist deine Gmail-Adresse, dazu ein <b>App-Passwort</b> (myaccount.google.com/apppasswords, braucht die Bestätigung in zwei Schritten). Dein normales Google-Passwort funktioniert hier nicht. <b>iCloud:</b> App-spezifisches Passwort von appleid.apple.com.</p>
+    <p style="margin:8px 0 0"><button class="btn ghost" style="margin:0 6px 0 0" onclick="mailPreset('smtp.gmail.com')">Gmail eintragen</button><button class="btn ghost" style="margin:0" onclick="mailPreset('smtp.mail.me.com')">iCloud eintragen</button></p>
+    <div class="row">${fld('Empfänger der Liste <span class="mute">(bis zu 5, mit Komma trennen)</span>', `<input id="m_LIST_TO" value="${esc(s.mail.LIST_TO || s.mail.to)}" placeholder="a@gmail.com, b@gmail.com">`)}${fld('SMTP-Server', `<input id="m_SMTP_HOST" value="${esc(s.mail.SMTP_HOST)}" placeholder="smtp.gmail.com">`)}${fld('Port', `<input id="m_SMTP_PORT" value="${esc(s.mail.SMTP_PORT || '587')}">`)}</div>
+    <div class="row">${fld('Benutzer', `<input id="m_SMTP_USER" value="${esc(s.mail.SMTP_USER)}" autocomplete="off" placeholder="deine@gmail.com">`)}${fld('Absender (leer = Benutzer)', `<input id="m_SMTP_FROM" value="${esc(s.mail.SMTP_FROM)}" placeholder="deine@gmail.com">`)}${fld('Passwort' + (s.mail.SMTP_PASS ? ' <span class="mute">(gespeichert)</span>' : ''), `<input type="password" id="m_SMTP_PASS" autocomplete="new-password" placeholder="${s.mail.SMTP_PASS ? 'Neues Passwort zum Ersetzen' : 'App-Passwort'}">`)}</div>
+    <button class="btn" onclick="saveMail()">Speichern</button>${s.smtp ? '<span class="good small">Versand ist eingerichtet.</span>' : '<span class="mute small">Noch nicht vollständig (Server, Benutzer und Passwort nötig).</span>'}</div>
+  <div class="card"><h3>So läuft es</h3><ol class="small" style="margin:6px 0 0;padding-left:20px;line-height:1.7">
+    <li><b>Sortieren:</b> Ort und Kategorie eingeben, „Leads suchen“. Mit „Alle Unternehmen“ kommen alle Betriebe der Stadt.</li>
+    <li>Pro Betrieb: <b>Cold Call</b> (Anrufliste) oder <b>Aussortieren</b>. Schnell per Tastatur: C / X, Z macht rückgängig.</li>
+    <li><b>Google</b> neben jedem Lead öffnet die Google-Suche, <b>Maps</b> die Karte.</li>
+    <li><b>Cold Calls:</b> Nummer anklicken, Ergebnis eintragen, Notiz schreiben. Die Zahlen landen in <b>Analytics</b>.</li>
+    <li>„Alle Leads löschen“ leert nur den Sortier-Pool. Cold Calls und Aussortiert bleiben erhalten.</li></ol>
+    <p class="mute small" style="margin:10px 0 0">Hinweis: Telefonwerbung gegenüber Unternehmen ist in Deutschland nur bei mutmaßlicher Einwilligung erlaubt (§ 7 UWG). Prüfe das für deinen Fall.</p></div>
+  <div class="card"><h3>Datensicherung</h3><p class="mute small" style="margin:0">Alle Daten liegen in <code>data.json</code> neben dem Programm, tägliche Sicherungen im Ordner <code>backups</code>.</p><button class="btn ghost" onclick="exportDb()">Backup herunterladen</button></div>`;
+}
+function mailPreset(host) { $('#m_SMTP_HOST').value = host; $('#m_SMTP_PORT').value = '587'; $('#m_SMTP_USER').focus(); }
+async function saveMail() {
+  const b = {}; for (const k of ['LIST_TO', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_FROM', 'SMTP_PASS']) b[k] = ($('#m_' + k)?.value || '').trim();
+  await act('settings', 'POST', b); toast('Gespeichert');
+}
+async function saveKey(k) { const v = $('#k_' + k).value.trim(); if (!v) return toast('Bitte zuerst einen Key einfügen', true); await act('settings', 'POST', {[k]:v}); KT[k] = null; toast('Gespeichert'); testKey(k, true); }
+async function testKey(k, quiet) { const v = ($('#k_' + k)?.value || '').trim(); if (!quiet) toast('Teste …'); try { KT[k] = await api('test-key', 'POST', {provider:k, key:v}); } catch {} render(); }
+async function clearKey(k) { if (!confirm('Key entfernen?')) return; KT[k] = null; await act('settings', 'POST', {clear:[k]}); }
+async function exportDb() {
+  const r = await fetch('/api/export', {headers:{'x-token':tok}}); if (!r.ok) return toast('Export fehlgeschlagen', true);
+  const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(await r.blob()), download:'prospectly-backup.json'}); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* ===== Rendering ===== */
+function render(defer) {
+  if (!D) return;
+  const nPool = pool().length;
+  const counts = {sort:nPool, cold:D.leads.filter(x => x.list == 'cold' && !x.cold.res).length, skip:D.leads.filter(x => x.list == 'skip').length};
+  $('#nav').innerHTML = Object.entries(TABS).map(([k, t]) => `<button class="${k == tab ? 'on' : ''}" onclick="go('${k}')"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>${t}${counts[k] ? `<span class="badge">${counts[k]}</span>` : ''}</button>`).join('');
+  const j = Object.entries(D.jobs).filter(e => e[1]).map(([k, c]) => (JOBN[k] || k) + ' ' + c).join(' · ');
+  $('#jobs').textContent = j ? j : 'Alles ruhig'; $('#jobs').className = j ? 'work' : '';
+  if (defer) { renderPending = true; return; }
+  renderPending = false;
+  const html = VIEWS[tab]();
+  if (html !== $('#main')._h) { $('#main').innerHTML = html; $('#main')._h = html; }
+}
+setInterval(() => load().catch(() => {}), 3000);
+addEventListener('keydown', e => {
+  if (tab != 'sort' || !D || e.ctrlKey || e.metaKey || e.altKey || typing()) return;
+  const k = e.key.toLowerCase(), first = poolView()[0];
+  if ((k == 'c' || k == 'arrowright') && first) { e.preventDefault(); sortTo([first.id], 'cold'); }
+  else if ((k == 'x' || k == 'arrowleft') && first) { e.preventDefault(); sortTo([first.id], 'skip'); }
+  else if (k == 'z' && UNDO) { e.preventDefault(); UNDO(); }
+});
+load(true).catch(e => { $('#main').innerHTML = '<div class="empty"><b>Keine Verbindung zum Server</b>' + esc(e.message) + '</div>'; });
+
+</script>
+</body>
+</html>
